@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 type MMSData struct {
@@ -26,7 +27,7 @@ func (MD StorageMMS) Put(Country *MMSData) {
 }
 
 func (MD StorageMMS) GetMMS() {
-	res, err := http.Get("http://127.0.0.1:8383/mms")
+	res, err := http.Get(os.Getenv("MMS_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +42,7 @@ func (MD StorageMMS) GetMMS() {
 		}
 		for i, _ := range m {
 			for j, _ := range NSC {
-				if m[i].Country == NSC[j].NameCountry {
+				if m[i].Country == NSC[j].CodeCountry {
 					if m[i].Provider == "Topolo" || m[i].Provider == "Rond" || m[i].Provider == "Kildy" {
 						MD.Put(m[i])
 					}
@@ -62,51 +63,13 @@ func SortedMMSData(MD StorageMMS) [][]*MMSData {
 	sortedMMSData1 := make([]*MMSData, len(MD))
 	sortedMMSData2 := make([]*MMSData, len(MD))
 	result := make([][]*MMSData, 0)
+	NSC := repo_country.CreateNewCountryStorage()
+	repo_country.ReadFile(NSC)
 	for i, _ := range MD {
-		if MD[i].Country == "RU" {
-			MD[i].Country = "Russian Federation"
-		}
-		if MD[i].Country == "US" {
-			MD[i].Country = "United States"
-		}
-		if MD[i].Country == "GB" {
-			MD[i].Country = "Great Britain"
-		}
-		if MD[i].Country == "FR" {
-			MD[i].Country = "France"
-		}
-		if MD[i].Country == "BL" {
-			MD[i].Country = "Saint Barthelemy"
-		}
-		if MD[i].Country == "AT" {
-			MD[i].Country = "Austria"
-		}
-		if MD[i].Country == "BG" {
-			MD[i].Country = "Bulgaria"
-		}
-		if MD[i].Country == "DK" {
-			MD[i].Country = "Denmark"
-		}
-		if MD[i].Country == "CA" {
-			MD[i].Country = "Canada"
-		}
-		if MD[i].Country == "ES" {
-			MD[i].Country = "Spain"
-		}
-		if MD[i].Country == "CH" {
-			MD[i].Country = "Switzerland"
-		}
-		if MD[i].Country == "TR" {
-			MD[i].Country = "Turkey"
-		}
-		if MD[i].Country == "PE" {
-			MD[i].Country = "Peru"
-		}
-		if MD[i].Country == "NZ" {
-			MD[i].Country = "New Zealand"
-		}
-		if MD[i].Country == "MC" {
-			MD[i].Country = "Monaco"
+		for j, _ := range NSC {
+			if MD[i].Country == NSC[j].CodeCountry {
+				MD[i].Country = NSC[j].NameCountry
+			}
 		}
 	}
 

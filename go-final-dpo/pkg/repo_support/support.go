@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 type SupportData struct {
@@ -22,7 +23,7 @@ func (SSD StorageSupport) Put(Country *SupportData) {
 	SSD[len(SSD)] = Country
 }
 func (SSD StorageSupport) GetSupport() (SS []*SupportData) {
-	res, err := http.Get("http://127.0.0.1:8383/support")
+	res, err := http.Get(os.Getenv("SUPPORT_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}

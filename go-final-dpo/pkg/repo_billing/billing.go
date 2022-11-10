@@ -1,6 +1,9 @@
 package repo_billing
 
-import "io/ioutil"
+import (
+	"io/ioutil"
+	"os"
+)
 
 type BillingData struct {
 	CreateCustomer bool `json:"create_customer"`
@@ -21,7 +24,7 @@ func (BD StorageBilling) Put(Country *BillingData) {
 }
 
 func (BD StorageBilling) ReadFileBilling() {
-	r, err := ioutil.ReadFile("simulator/billing.data")
+	r, err := ioutil.ReadFile(os.Getenv("BILLING_FILE"))
 	if err != nil {
 		panic(err)
 	}

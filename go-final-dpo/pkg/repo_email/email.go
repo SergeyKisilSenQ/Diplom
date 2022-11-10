@@ -3,6 +3,7 @@ package repo_email
 import (
 	"Diplom/go-final-dpo/pkg/repo_country"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -26,7 +27,7 @@ func (ED StorageEmail) Put(Country *EmailData) {
 func (ED StorageEmail) ReadFileEmail() {
 	NSC := repo_country.CreateNewCountryStorage()
 	repo_country.ReadFile(NSC)
-	r, err := ioutil.ReadFile("simulator/email.data")
+	r, err := ioutil.ReadFile(os.Getenv("EMAIL_FILE"))
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +40,7 @@ func (ED StorageEmail) ReadFileEmail() {
 
 		if len(e) == 3 {
 			for k, _ := range NSC {
-				if e[0] == NSC[k].NameCountry {
+				if e[0] == NSC[k].CodeCountry {
 					if e[1] == "Gmail" || e[1] == "Yahoo" || e[1] == "Hotmail" || e[1] == "MSN" || e[1] == "Orange" || e[1] == "Comcast" || e[1] == "AOL" || e[1] == "Live" || e[1] == "RediffMail" || e[1] == "GMX" || e[1] == "ProtonMail" || e[1] == "Yandex" || e[1] == "Mail.ru" {
 						NewСountry := e[0]
 						NewProvider := e[1]
@@ -64,70 +65,19 @@ func (ED StorageEmail) ReadFileEmail() {
 	//}
 }
 
-func getCountriesList() []string {
-
-	return []string{"Russian Federation", "United States", "Great Britain", "France", "Saint Barthelemy", "Austria", "Bulgaria", "Denmark", "Canada", "Spain", "Switzerland", "Turkey", "Peru", "New Zealand", "Monaco"}
-}
-
 func SortedEmailData(ED StorageEmail) map[string][][]*EmailData {
-	countryList := getCountriesList()
 	result := make(map[string][][]*EmailData)
+	NSC := repo_country.CreateNewCountryStorage()
+	repo_country.ReadFile(NSC)
 
-	for i, _ := range ED {
-		if ED[i].Country == "RU" {
-			ED[i].Country = "Russian Federation"
-		}
-		if ED[i].Country == "US" {
-			ED[i].Country = "United States"
-		}
-		if ED[i].Country == "GB" {
-			ED[i].Country = "Great Britain"
-		}
-		if ED[i].Country == "FR" {
-			ED[i].Country = "France"
-		}
-		if ED[i].Country == "BL" {
-			ED[i].Country = "Saint Barthelemy"
-		}
-		if ED[i].Country == "AT" {
-			ED[i].Country = "Austria"
-		}
-		if ED[i].Country == "BG" {
-			ED[i].Country = "Bulgaria"
-		}
-		if ED[i].Country == "DK" {
-			ED[i].Country = "Denmark"
-		}
-		if ED[i].Country == "CA" {
-			ED[i].Country = "Canada"
-		}
-		if ED[i].Country == "ES" {
-			ED[i].Country = "Spain"
-		}
-		if ED[i].Country == "CH" {
-			ED[i].Country = "Switzerland"
-		}
-		if ED[i].Country == "TR" {
-			ED[i].Country = "Turkey"
-		}
-		if ED[i].Country == "PE" {
-			ED[i].Country = "Peru"
-		}
-		if ED[i].Country == "NZ" {
-			ED[i].Country = "New Zealand"
-		}
-		if ED[i].Country == "MC" {
-			ED[i].Country = "Monaco"
-		}
-	}
-
-	for i, _ := range countryList {
+	for i, _ := range NSC {
 		tempData := make([]*EmailData, 0)
 		sortedEmailDataF := make([]*EmailData, 3)
 		sortedEmailDataS := make([]*EmailData, 3)
 		slice := make([][]*EmailData, 0)
 		for j, _ := range ED {
-			if ED[j].Country == countryList[i] {
+			if ED[j].Country == NSC[i].CodeCountry {
+				ED[j].Country = NSC[i].NameCountry
 				tempData = append(tempData, ED[j])
 			}
 		}
@@ -156,7 +106,9 @@ func SortedEmailData(ED StorageEmail) map[string][][]*EmailData {
 			}
 		}
 		slice = append(slice, sortedEmailDataF, sortedEmailDataS)
-		result[countryList[i]] = slice
+		if sortedEmailDataF[0] != nil && sortedEmailDataS[0] != nil {
+			result[NSC[i].NameCountry] = slice
+		}
 	}
 
 	//fmt.Println(result)

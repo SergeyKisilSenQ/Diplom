@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 type IncidentData struct {
@@ -23,7 +24,7 @@ func (ID StorageIncident) Put(Country *IncidentData) {
 }
 
 func (ID StorageIncident) GetIncident() (IS []*IncidentData) {
-	res, err := http.Get("http://127.0.0.1:8383/accendent")
+	res, err := http.Get(os.Getenv("INCIDENT_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}

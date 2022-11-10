@@ -3,6 +3,7 @@ package repo_voice
 import (
 	"Diplom/go-final-dpo/pkg/repo_country"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -31,7 +32,7 @@ func (VD StorageVoice) Put(Country *VoiceData) {
 func (VD StorageVoice) ReadFileVoice() {
 	NSC := repo_country.CreateNewCountryStorage()
 	repo_country.ReadFile(NSC)
-	r, err := ioutil.ReadFile("simulator/voice.data")
+	r, err := ioutil.ReadFile(os.Getenv("VOICE_FILE"))
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +45,7 @@ func (VD StorageVoice) ReadFileVoice() {
 
 		if len(e) == 8 {
 			for k, _ := range NSC {
-				if e[0] == NSC[k].NameCountry {
+				if e[0] == NSC[k].CodeCountry {
 					if e[3] == "TransparentCalls" || e[3] == "E-Voice" || e[3] == "JustPhone" {
 						NewСountry := e[0]
 						NewBandwidth, err := strconv.Atoi(e[1])
