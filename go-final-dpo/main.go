@@ -20,9 +20,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		// ti chto kuku?
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Write(res)
+		// da, kuku
 	})
 	http.ListenAndServe("localhost:8282", r)
 }
