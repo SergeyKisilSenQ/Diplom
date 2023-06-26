@@ -20,7 +20,7 @@ func (NCS NewCountryStorage) Put(Country *CountryStorage) {
 	NCS[Country.CodeCountry] = Country
 }
 
-func ReadFile(nsc NewCountryStorage) (NCS NewCountryStorage) {
+func ReadFile(nsc NewCountryStorage) {
 	file, err := os.Open(os.Getenv("COUNTRY_FILE"))
 	if err != nil {
 		panic(err)
@@ -41,5 +41,4 @@ func ReadFile(nsc NewCountryStorage) (NCS NewCountryStorage) {
 		}
 		nsc.Put(&NewCountry)
 	}
-	return NCS
 }

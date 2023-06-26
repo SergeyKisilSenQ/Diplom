@@ -41,9 +41,7 @@ func getResultData() *ResultSetT {
 
 	go func() {
 		defer wg.Done()
-		SD := repo_sms.NewStorageSMS()
-		SD.ReadFileSMS()
-		smsData = repo_sms.SortedSMSData(SD)
+		smsData = repo_sms.NewStorageSMS().GetSmsData()
 	}()
 	go func() {
 		defer wg.Done()
@@ -54,9 +52,7 @@ func getResultData() *ResultSetT {
 
 	go func() {
 		defer wg.Done()
-		VD := repo_voice.NewStorageVoice()
-		VD.ReadFileVoice()
-		voiceCallData = repo_voice.AddVoiceData(VD)
+		voiceCallData = repo_voice.NewStorageVoice().GetVoiceData()
 	}()
 
 	go func() {
@@ -68,9 +64,7 @@ func getResultData() *ResultSetT {
 
 	go func() {
 		defer wg.Done()
-		BD := repo_billing.NewStorageBilling()
-		BD.ReadFileBilling()
-		billingData = BD[0]
+		billingData = repo_billing.NewStorageBilling().ReadFileBilling()
 	}()
 
 	go func() {
@@ -108,7 +102,7 @@ func GetResult() *ResultT {
 	if len(r.SMS[0]) == 0 || len(r.MMS[0]) == 0 || len(r.VoiceCall) == 0 || len(r.Email) == 0 || r.Support[0] == 0 || len(r.Incidents) == 0 {
 		result = &ResultT{
 			Status: false,
-			Error:  "Ошибка получения данных",
+			Error:  "error data",
 		}
 	} else {
 		result = &ResultT{

@@ -1,16 +1,17 @@
-package main
+package server
 
 import (
-	"Diplom/go-final-dpo/pkg/conf"
+	"Diplom/go-final-dpo/conf"
 	"Diplom/go-final-dpo/pkg/repo_result"
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 )
 
-func main() {
+func Run() {
 	conf.GetConf()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -24,5 +25,7 @@ func main() {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Write(res)
 	})
+	fmt.Println("start server...")
 	http.ListenAndServe("localhost:8282", r)
+
 }

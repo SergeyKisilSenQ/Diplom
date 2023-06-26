@@ -1,9 +1,10 @@
 package repo_sms
 
 import (
-	"Diplom/go-final-dpo/pkg/repo_country"
-	"io/ioutil"
+	"Diplom/go-final-dpo/utils"
+	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -15,100 +16,64 @@ type SMSData struct {
 	Provider     string `json:"provider"`
 }
 
-type StorageSMS map[int]*SMSData
+type StorageSMS [][]*SMSData
 
-func NewStorageSMS() StorageSMS {
-	return make(map[int]*SMSData)
+func NewStorageSMS() *StorageSMS {
+	return &StorageSMS{}
 }
 
-func (SD StorageSMS) Put(Country *SMSData) {
-	SD[len(SD)] = Country
-}
-
-func (SD StorageSMS) ReadFileSMS() {
-	NSC := repo_country.CreateNewCountryStorage()
-	repo_country.ReadFile(NSC)
-	r, err := ioutil.ReadFile(os.Getenv("SMS_FILE"))
+func (SD *StorageSMS) GetSmsData() [][]*SMSData {
+	sortedSMSData1 := make([]*SMSData, 0)
+	sortedSMSData2 := make([]*SMSData, 0)
+	readData, err := os.ReadFile(os.Getenv("SMS_FILE"))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	s := strings.Fields(string(r))
-	for i := 0; i < len(s); i++ {
-		var result string
-		var e []string
-		result = strings.ReplaceAll(s[i], ";", " ")
-		e = strings.Fields(result)
-
-		if len(e) == 4 {
-			for k, _ := range NSC {
-				if e[0] == NSC[k].CodeCountry {
-					if e[3] == "Topolo" || e[3] == "Rond" || e[3] == "Kildy" {
-						NewСountry := e[0]
-						NewBandwidth, err := strconv.Atoi(e[1])
-						if err != nil {
-							panic(err)
-						}
-						NewResponseTime, err := strconv.Atoi(e[2])
-						if err != nil {
-							panic(err)
-						}
-						NewProvider := e[3]
-						NewSMSData := SMSData{
-							Сountry:      NewСountry,
-							Bandwidth:    NewBandwidth,
-							ResponseTime: NewResponseTime,
-							Provider:     NewProvider,
-						}
-						SD.Put(&NewSMSData)
-					}
-				}
-			}
+	str := strings.Fields(string(readData))
+	for _, val := range str {
+		strArray := strings.Split(val, ";")
+		if len(strArray) != 4 {
+			log.Println("Incorrect lenght data string")
+			continue
 		}
+		NewCountry, err := utils.CountryCheck(strArray[0])
+		if err != nil {
+			log.Printf("%s: %s, in sms-data\n", err, strArray[0])
+			continue
+		}
+		NewBandwidth, err := strconv.Atoi(strArray[1])
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		NewResponseTime, err := strconv.Atoi(strArray[2])
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		NewProvider, err := utils.CheckProvider(strArray[3], strings.Split(os.Getenv("SMS_MMS_PROVIDER"), ", "))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		NewSMSData1 := &SMSData{
+			Сountry:      NewCountry,
+			Bandwidth:    NewBandwidth,
+			ResponseTime: NewResponseTime,
+			Provider:     NewProvider,
+		}
+		NewSMSData2 := &SMSData{
+			Сountry:      NewCountry,
+			Bandwidth:    NewBandwidth,
+			ResponseTime: NewResponseTime,
+			Provider:     NewProvider,
+		}
+		sortedSMSData1 = append(sortedSMSData1, NewSMSData1)
+		sortedSMSData2 = append(sortedSMSData2, NewSMSData2)
 	}
-}
-
-func SortedSMSData(SD StorageSMS) [][]*SMSData {
-	sortedSMSData1 := make([]*SMSData, len(SD))
-	sortedSMSData2 := make([]*SMSData, len(SD))
+	sort.SliceStable(sortedSMSData1, func(i, j int) bool { return sortedSMSData1[i].Provider < sortedSMSData1[j].Provider })
+	sort.SliceStable(sortedSMSData2, func(i, j int) bool { return sortedSMSData2[i].Сountry < sortedSMSData2[j].Сountry })
 	result := make([][]*SMSData, 0)
-	NSC := repo_country.CreateNewCountryStorage()
-	repo_country.ReadFile(NSC)
-	for i, _ := range SD {
-		for j, _ := range NSC {
-			if SD[i].Сountry == NSC[j].CodeCountry {
-				SD[i].Сountry = NSC[j].NameCountry
-			}
-		}
-	}
-	for i := 1; i < len(SD); i++ {
-		j := i
-		for j > 0 {
-			if SD[j-1].Provider > SD[j].Provider {
-				SD[j-1], SD[j] = SD[j], SD[j-1]
-			}
-			j = j - 1
-		}
-		for k, _ := range SD {
-			sortedSMSData1[k] = SD[k]
-		}
-	}
-	for i := 1; i < len(SD); i++ {
-		j := i
-		for j > 0 {
-			if SD[j-1].Сountry > SD[j].Сountry {
-				SD[j-1], SD[j] = SD[j], SD[j-1]
-			}
-			j = j - 1
-		}
-		for k, _ := range SD {
-			sortedSMSData2[k] = SD[k]
-		}
-	}
-
 	result = append(result, sortedSMSData1, sortedSMSData2)
-
-	//fmt.Println(result)
-	//fmt.Println(sortedSMSData1)
-	//fmt.Println(sortedSMSData2)
 	return result
 }

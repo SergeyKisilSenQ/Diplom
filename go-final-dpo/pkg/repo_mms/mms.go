@@ -1,7 +1,7 @@
 package repo_mms
 
 import (
-	"Diplom/go-final-dpo/pkg/repo_country"
+	"Diplom/go-final-dpo/iternal/repo_country"
 	"encoding/json"
 	"io"
 	"log"
@@ -50,10 +50,6 @@ func (MD StorageMMS) GetMMS() {
 
 			}
 		}
-
-		//for i, _ := range MD {
-		//	fmt.Printf("%s, %s, %s, %s, \n", MD[i].Country, MD[i].Provider, MD[i].ResponseTime, MD[i].Bandwidth)
-		//}
 	} else {
 		log.Fatal(err)
 	}

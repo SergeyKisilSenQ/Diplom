@@ -1,7 +1,7 @@
 package repo_email
 
 import (
-	"Diplom/go-final-dpo/pkg/repo_country"
+	"Diplom/go-final-dpo/iternal/repo_country"
 	"io/ioutil"
 	"os"
 	"strconv"

@@ -1,7 +1,7 @@
 package repo_billing
 
 import (
-	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -14,43 +14,30 @@ type BillingData struct {
 	CheckoutPage   bool `json:"checkout_page"`
 }
 
-type StorageBilling map[int]*BillingData
-
-func NewStorageBilling() StorageBilling {
-	return make(map[int]*BillingData)
-}
-func (BD StorageBilling) Put(Country *BillingData) {
-	BD[len(BD)] = Country
+func NewStorageBilling() *BillingData {
+	return &BillingData{}
 }
 
-func (BD StorageBilling) ReadFileBilling() {
-	r, err := ioutil.ReadFile(os.Getenv("BILLING_FILE"))
+func (*BillingData) ReadFileBilling() *BillingData {
+	r, err := os.ReadFile(os.Getenv("BILLING_FILE"))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	var b []bool
 	for i := 0; i < len(r); i++ {
-		if r[i] == 49 {
+		if r[i] == '1' {
 			b = append(b, true)
 		} else {
 			b = append(b, false)
 		}
 	}
-	NewCreateCustomer := b[5]
-	NewPurchase := b[4]
-	NewPayout := b[3]
-	NewRecurring := b[2]
-	NewFraudControl := b[1]
-	NewCheckoutPage := b[0]
-	NewBillingData := BillingData{
-		CreateCustomer: NewCreateCustomer,
-		Purchase:       NewPurchase,
-		Payout:         NewPayout,
-		Recurring:      NewRecurring,
-		FraudControl:   NewFraudControl,
-		CheckoutPage:   NewCheckoutPage,
-	}
-	BD.Put(&NewBillingData)
 
-	//	fmt.Println(BD[0])
+	return &BillingData{
+		CreateCustomer: b[5],
+		Purchase:       b[4],
+		Payout:         b[3],
+		Recurring:      b[2],
+		FraudControl:   b[1],
+		CheckoutPage:   b[0],
+	}
 }
