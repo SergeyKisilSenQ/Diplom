@@ -1,12 +1,14 @@
 package repo_mms
 
 import (
-	"Diplom/go-final-dpo/iternal/repo_country"
+	"Diplom/go-final-dpo/utils"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"sort"
+	"strings"
 )
 
 type MMSData struct {
@@ -16,88 +18,59 @@ type MMSData struct {
 	ResponseTime string `json:"response_time"`
 }
 
-type StorageMMS map[int]*MMSData
+type StorageMMS [][]*MMSData
 
-func NewStorageMMS() StorageMMS {
-	return make(map[int]*MMSData)
+func NewStorageMMS() *StorageMMS {
+	return &StorageMMS{}
 }
 
-func (MD StorageMMS) Put(Country *MMSData) {
-	MD[len(MD)] = Country
-}
-
-func (MD StorageMMS) GetMMS() {
+func (*StorageMMS) GetMMSData() [][]*MMSData {
+	sortedMMSData1 := make([]*MMSData, 0)
+	sortedMMSData2 := make([]*MMSData, 0)
 	res, err := http.Get(os.Getenv("MMS_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer res.Body.Close()
-	NSC := repo_country.CreateNewCountryStorage()
-	repo_country.ReadFile(NSC)
 	if res.StatusCode == http.StatusOK {
 		var m []*MMSData
 		if err := json.Unmarshal(body, &m); err != nil {
 			log.Fatal(err)
 		}
 		for i, _ := range m {
-			for j, _ := range NSC {
-				if m[i].Country == NSC[j].CodeCountry {
-					if m[i].Provider == "Topolo" || m[i].Provider == "Rond" || m[i].Provider == "Kildy" {
-						MD.Put(m[i])
-					}
-				}
-
+			NewCountry, err := utils.CountryCheck(m[i].Country)
+			if err != nil {
+				log.Printf("%s: %s, in mms-data\n", err, m[i].Country)
+				continue
 			}
+			NewProvider, err := utils.CheckProvider(m[i].Provider, strings.Split(os.Getenv("SMS_MMS_PROVIDER"), ", "))
+			if err != nil {
+				log.Printf("%s: %s, in mms-data\n", err, m[i].Provider)
+				continue
+			}
+			NewMMSData1 := &MMSData{
+				Country:      NewCountry,
+				Provider:     NewProvider,
+				Bandwidth:    m[i].Bandwidth,
+				ResponseTime: m[i].Bandwidth,
+			}
+			NewMMSData2 := &MMSData{
+				Country:      NewCountry,
+				Provider:     NewProvider,
+				Bandwidth:    m[i].Bandwidth,
+				ResponseTime: m[i].Bandwidth,
+			}
+			sortedMMSData1 = append(sortedMMSData1, NewMMSData1)
+			sortedMMSData2 = append(sortedMMSData2, NewMMSData2)
 		}
-	} else {
-		log.Fatal(err)
 	}
-}
-
-func SortedMMSData(MD StorageMMS) [][]*MMSData {
-	sortedMMSData1 := make([]*MMSData, len(MD))
-	sortedMMSData2 := make([]*MMSData, len(MD))
+	sort.SliceStable(sortedMMSData1, func(i, j int) bool { return sortedMMSData1[i].Provider < sortedMMSData1[j].Provider })
+	sort.SliceStable(sortedMMSData2, func(i, j int) bool { return sortedMMSData2[i].Country < sortedMMSData2[j].Country })
 	result := make([][]*MMSData, 0)
-	NSC := repo_country.CreateNewCountryStorage()
-	repo_country.ReadFile(NSC)
-	for i, _ := range MD {
-		for j, _ := range NSC {
-			if MD[i].Country == NSC[j].CodeCountry {
-				MD[i].Country = NSC[j].NameCountry
-			}
-		}
-	}
-
-	for i := 1; i < len(MD); i++ {
-		j := i
-		for j > 0 {
-			if MD[j-1].Provider > MD[j].Provider {
-				MD[j-1], MD[j] = MD[j], MD[j-1]
-			}
-			j = j - 1
-		}
-		for k, _ := range MD {
-			sortedMMSData1[k] = MD[k]
-		}
-	}
-	for i := 1; i < len(MD); i++ {
-		j := i
-		for j > 0 {
-			if MD[j-1].Country > MD[j].Country {
-				MD[j-1], MD[j] = MD[j], MD[j-1]
-			}
-			j = j - 1
-		}
-		for k, _ := range MD {
-			sortedMMSData2[k] = MD[k]
-		}
-	}
-
 	result = append(result, sortedMMSData1, sortedMMSData2)
-
-	//fmt.Println(result)
-	//fmt.Println(sortedMMSData1[0].Provider, sortedMMSData1[1].Provider, sortedMMSData1[4].Provider)
-	//fmt.Println(sortedMMSData2[0].Country, sortedMMSData2[3].Country, sortedMMSData2[5].Country)
 	return result
 }

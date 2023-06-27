@@ -45,9 +45,7 @@ func getResultData() *ResultSetT {
 	}()
 	go func() {
 		defer wg.Done()
-		MD := repo_mms.NewStorageMMS()
-		MD.GetMMS()
-		mmsData = repo_mms.SortedMMSData(MD)
+		mmsData = repo_mms.NewStorageMMS().GetMMSData()
 	}()
 
 	go func() {
@@ -67,16 +65,12 @@ func getResultData() *ResultSetT {
 
 	go func() {
 		defer wg.Done()
-		SSD := repo_support.NewStorageSupport()
-		SSD.GetSupport()
-		supportData = repo_support.SupportDataStatus(SSD)
+		supportData = repo_support.NewStorageSupport().GetSupportData()
 	}()
 
 	go func() {
 		defer wg.Done()
-		ID := repo_incident.NewStorageIncident()
-		ID.GetIncident()
-		incidentsData = repo_incident.AddIncidentData(ID)
+		incidentsData = repo_incident.NewStorageIncident().GetIncidentData()
 	}()
 
 	wg.Wait()

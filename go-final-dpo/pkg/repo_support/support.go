@@ -13,45 +13,36 @@ type SupportData struct {
 	ActiveTickets int    `json:"active_tickets"`
 }
 
-type StorageSupport map[int]*SupportData
+type StorageSupport []*SupportData
 
-func NewStorageSupport() StorageSupport {
-	return make(map[int]*SupportData)
+func NewStorageSupport() *StorageSupport {
+	return &StorageSupport{}
 }
 
-func (SSD StorageSupport) Put(Country *SupportData) {
-	SSD[len(SSD)] = Country
-}
-func (SSD StorageSupport) GetSupport() (SS []*SupportData) {
+func (*StorageSupport) GetSupportData() []int {
 	res, err := http.Get(os.Getenv("SUPPORT_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer res.Body.Close()
 	var s []*SupportData
 	if res.StatusCode == http.StatusOK {
-		if e := json.Unmarshal(body, &s); e != nil {
-			return SS
-		}
-		for i, _ := range s {
-			SSD.Put(s[i])
+		if err := json.Unmarshal(body, &s); err != nil {
+			log.Fatal(err)
 		}
 	}
-	if res.StatusCode == http.StatusInternalServerError {
-		return SS
-	}
-	//for i, _ := range SSD {
-	//	fmt.Println(SSD[i])
-	//}
-	return SS
+	return SupportDataStatus(s)
 }
 
-func SupportDataStatus(SSD StorageSupport) []int {
+func SupportDataStatus(s []*SupportData) []int {
 	var supportDataStatus []int
 	var sumActiveTickets int
-	for i, _ := range SSD {
-		sumActiveTickets += SSD[i].ActiveTickets
+	for _, val := range s {
+		sumActiveTickets += val.ActiveTickets
 	}
 	if sumActiveTickets < 9 {
 		supportDataStatus = append(supportDataStatus, 1)
@@ -61,6 +52,5 @@ func SupportDataStatus(SSD StorageSupport) []int {
 		supportDataStatus = append(supportDataStatus, 3)
 	}
 	supportDataStatus = append(supportDataStatus, sumActiveTickets*3)
-	//fmt.Println(supportDataStatus)
 	return supportDataStatus
 }
