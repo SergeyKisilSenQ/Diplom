@@ -25,7 +25,7 @@ func NewStorageVoice() *StorageVoice {
 	return &StorageVoice{}
 }
 
-func (VD *StorageVoice) GetVoiceData() []*VoiceData {
+func (*StorageVoice) GetVoiceData() []*VoiceData {
 	voiceData := make([]*VoiceData, 0)
 	readData, err := os.ReadFile(os.Getenv("VOICE_FILE"))
 	if err != nil {
@@ -55,7 +55,7 @@ func (VD *StorageVoice) GetVoiceData() []*VoiceData {
 		}
 		NewProvider, err := utils.CheckProvider(strArray[3], strings.Split(os.Getenv("VOICE_PROVIDER"), ", "))
 		if err != nil {
-			log.Println(err)
+			log.Printf("%s: %s, in voice-data\n", err, strArray[3])
 			continue
 		}
 		NewConnectionStability, err := strconv.ParseFloat(strArray[4], 32)

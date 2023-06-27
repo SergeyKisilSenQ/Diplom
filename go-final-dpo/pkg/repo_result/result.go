@@ -57,9 +57,7 @@ func getResultData() *ResultSetT {
 
 	go func() {
 		defer wg.Done()
-		ED := repo_email.NewStorageEmail()
-		ED.ReadFileEmail()
-		emailData = repo_email.SortedEmailData(ED)
+		emailData = repo_email.NewStorageEmail().GetEmailData()
 	}()
 
 	go func() {

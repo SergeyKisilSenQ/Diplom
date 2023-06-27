@@ -22,7 +22,7 @@ func NewStorageSMS() *StorageSMS {
 	return &StorageSMS{}
 }
 
-func (SD *StorageSMS) GetSmsData() [][]*SMSData {
+func (*StorageSMS) GetSmsData() [][]*SMSData {
 	sortedSMSData1 := make([]*SMSData, 0)
 	sortedSMSData2 := make([]*SMSData, 0)
 	readData, err := os.ReadFile(os.Getenv("SMS_FILE"))
@@ -53,7 +53,7 @@ func (SD *StorageSMS) GetSmsData() [][]*SMSData {
 		}
 		NewProvider, err := utils.CheckProvider(strArray[3], strings.Split(os.Getenv("SMS_MMS_PROVIDER"), ", "))
 		if err != nil {
-			log.Println(err)
+			log.Printf("%s: %s, in sms-data\n", err, strArray[3])
 			continue
 		}
 		NewSMSData1 := &SMSData{
